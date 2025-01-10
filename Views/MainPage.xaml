@@ -1,0 +1,32 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TruthOrDrinkApp.ViewModels"
+             x:Class="TruthOrDrinkApp.Views.MainPage">
+
+
+    <VerticalStackLayout Padding="20" Spacing="15">
+
+        <Label Text="Truth or Drink!" FontSize="32" HorizontalOptions="Center" />
+
+        <!-- Knop om een willekeurige vraag op te halen -->
+        <Button Text="Get Random Question" Command="{Binding GetRandomQuestionCommand}" />
+
+        <!-- Label om de geselecteerde vraag weer te geven -->
+        <Label Text="{Binding SelectedQuestion.Text}" FontSize="24" TextColor="Red" 
+               HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
+
+        <!-- Veld om een nieuwe vraag in te voeren -->
+        <Entry Placeholder="Enter a new question" 
+               Text="{Binding NewQuestionText, Mode=TwoWay}" />
+
+        <!-- Switch om 'Truth' of 'Drink' te selecteren -->
+        <HorizontalStackLayout Spacing="10">
+            <Label Text="Is Truth?" VerticalOptions="Center" />
+            <Switch IsToggled="{Binding IsTruth, Mode=TwoWay}" />
+        </HorizontalStackLayout>
+
+        <!-- Knop om een nieuwe vraag toe te voegen -->
+        <Button Text="Add Question" Command="{Binding AddQuestionCommand}" />
+
+    </VerticalStackLayout>
+</ContentPage>
