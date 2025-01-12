@@ -3,12 +3,15 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using TruthOrDrinkApp.Models;
 using TruthOrDrinkApp.Services;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;  // Zorg ervoor dat dit is toegevoegd
 
 namespace TruthOrDrinkApp.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly DatabaseService _databaseService;
+        private readonly ApiService _apiService;
 
         [ObservableProperty]
         private Question selectedQuestion;
@@ -21,23 +24,31 @@ namespace TruthOrDrinkApp.ViewModels
 
         public ObservableCollection<Question> Questions { get; } = new();
 
-        public MainViewModel(DatabaseService databaseService)
+        public MainViewModel(DatabaseService databaseService, ApiService apiService)
         {
             _databaseService = databaseService;
+            _apiService = apiService;
             _ = LoadQuestions();
         }
 
         [RelayCommand]
-        private async Task LoadQuestions()
+        public async Task LoadQuestions() // Gebruik 'public' om toegang te garanderen
         {
             Questions.Clear();
-            var questions = await _databaseService.GetQuestionsAsync();
-            foreach (var question in questions)
+
+            // Haal vragen op van de API
+            var apiQuestions = await _apiService.GetQuestionsFromApiAsync();
+            foreach (var question in apiQuestions)
+                Questions.Add(question);
+
+            // Optioneel: Haal ook lokale vragen op
+            var localQuestions = await _databaseService.GetQuestionsAsync();
+            foreach (var question in localQuestions)
                 Questions.Add(question);
         }
 
         [RelayCommand]
-        private async Task AddQuestion()
+        public async Task AddQuestion()
         {
             if (string.IsNullOrWhiteSpace(NewQuestionText))
             {
@@ -51,18 +62,21 @@ namespace TruthOrDrinkApp.ViewModels
                 IsTruth = IsTruth
             };
 
-            await _databaseService.AddQuestionAsync(question);
+            // Voeg vraag toe via API
+            await _apiService.AddQuestionToApiAsync(question);
+
+            // Voeg vraag toe aan lokale collectie
             Questions.Add(question);
 
-            // Reset het invoerveld en de switch
-            NewQuestionText = string.Empty; 
+            // Reset invoer
+            NewQuestionText = string.Empty;
             IsTruth = false;
 
             await Application.Current.MainPage.DisplayAlert("Success", "Question added successfully!", "OK");
         }
 
         [RelayCommand]
-        private async Task GetRandomQuestion()
+        public async Task GetRandomQuestion()
         {
             var question = await _databaseService.GetRandomQuestionAsync();
             SelectedQuestion = question ?? new Question { Text = "No questions available! Add some questions first." };
